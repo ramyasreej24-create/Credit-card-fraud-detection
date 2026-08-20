@@ -1,0 +1,15 @@
+# Dataset (large, not needed for the deployed app)
+creditcard.csv
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+.venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
