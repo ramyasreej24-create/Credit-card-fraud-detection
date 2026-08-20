@@ -1,9 +1,11 @@
+
 """
 Credit Card Fraud Detection — Streamlit App
 Loads the trained ANN (class-weights baseline, tuned threshold) and lets the user
 either upload a CSV of transactions or enter a single transaction manually.
 """
 
+import os
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -15,12 +17,27 @@ st.set_page_config(page_title="Credit Card Fraud Detector (ANN)", page_icon="�
 FEATURE_COLUMNS = ["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount"]
 SCALE_COLUMNS = ["Time", "Amount"]
 
+# Resolve paths relative to this script's location, not the process's
+# working directory — Streamlit Cloud's cwd isn't always the repo root.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model_classweights.keras")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
+CONFIG_PATH = os.path.join(BASE_DIR, "model_config.pkl")
+
 
 @st.cache_resource
 def load_artifacts():
-    model = tf.keras.models.load_model("model_classweights.keras")
-    scaler = joblib.load("scaler.pkl")
-    config = joblib.load("model_config.pkl")
+    for path, label in [(MODEL_PATH, "model"), (SCALER_PATH, "scaler"), (CONFIG_PATH, "config")]:
+        if not os.path.exists(path):
+            st.error(
+                f"Missing {label} file at `{path}`. "
+                f"Make sure it's committed to the repo alongside app.py."
+            )
+            st.write("Files found in this directory:", os.listdir(BASE_DIR))
+            st.stop()
+    model = tf.keras.models.load_model(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
+    config = joblib.load(CONFIG_PATH)
     return model, scaler, config["threshold"]
 
 
